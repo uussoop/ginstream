@@ -7,7 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func sampleHandler(messageChannel *chan any, eventNameChannel *chan string) {
+func sampleHandler(
+	messageChannel *chan any,
+	eventNameChannel *chan string,
+	donechannel *chan bool,
+) {
 	for i := 0; i < 5; i++ {
 		// message := fmt.Sprintf("Message %d", i+1)
 		message := struct {
@@ -25,11 +29,11 @@ func sampleHandler(messageChannel *chan any, eventNameChannel *chan string) {
 		time.Sleep(1 * time.Nanosecond)
 	}
 	// Close the channel when the messages are sent
-	close(*messageChannel)
+	close(*donechannel)
 }
 
 func StreamHandler(
-	HandlerFunc func(MessageChannel *chan any, EventNameChannel *chan string),
+	HandlerFunc func(MessageChannel *chan any, EventNameChannel *chan string, DoneChannel *chan bool),
 	timeout time.Duration,
 ) gin.HandlerFunc {
 
@@ -40,11 +44,9 @@ func StreamHandler(
 
 		messageChannel := make(chan any)
 		eventNameChannel := make(chan string)
+		donechannel := make(chan bool)
 
-		defer close(messageChannel)
-		defer close(eventNameChannel)
-
-		go HandlerFunc(&messageChannel, &eventNameChannel)
+		go HandlerFunc(&messageChannel, &eventNameChannel, &donechannel)
 
 		for {
 			select {
@@ -63,6 +65,18 @@ func StreamHandler(
 				case <-c.Request.Context().Done():
 
 					return
+				case done, ok := <-donechannel:
+					if !ok {
+						close(messageChannel)
+						close(eventNameChannel)
+						return
+					}
+					if done {
+						close(messageChannel)
+						close(eventNameChannel)
+						close(donechannel)
+						return
+					}
 				case <-time.After(timeout):
 
 					return
@@ -72,6 +86,18 @@ func StreamHandler(
 			case <-c.Request.Context().Done():
 
 				return
+			case done, ok := <-donechannel:
+				if !ok {
+					close(messageChannel)
+					close(eventNameChannel)
+					return
+				}
+				if done {
+					close(messageChannel)
+					close(eventNameChannel)
+					close(donechannel)
+					return
+				}
 			case <-time.After(timeout):
 
 				return
