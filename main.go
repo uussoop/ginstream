@@ -11,14 +11,17 @@ func main() {
 
 	request := "request"
 	response := "response"
+	// this can be .data.message
+	path := "message"
 
 	HandlerConf := GeneralPurposeHandlerType{
 		StreamHandlerFunc:    sampleHandler,
 		NonStreamHandlerFunc: sampleNonstreamHandler,
 
-		Timeout:    100 * time.Millisecond,
-		InputName:  &request,
-		OutputName: &response,
+		Timeout:           100 * time.Millisecond,
+		InputName:         &request,
+		OutputName:        &response,
+		StreamMessagePath: &path,
 	}
 	r.GET("/chat", GeneralPurposeHandler(HandlerConf))
 
