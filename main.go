@@ -9,7 +9,18 @@ import (
 func main() {
 	r := gin.Default()
 
-	r.GET("/stream", StreamHandler(sampleHandler, 100*time.Millisecond))
+	request := "request"
+	response := "response"
+
+	HandlerConf := GeneralPurposeHandlerType{
+		StreamHandlerFunc:    sampleHandler,
+		NonStreamHandlerFunc: sampleNonstreamHandler,
+
+		Timeout:    100 * time.Millisecond,
+		InputName:  &request,
+		OutputName: &response,
+	}
+	r.GET("/chat", GeneralPurposeHandler(HandlerConf))
 
 	r.Run(":8080")
 }
