@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -53,6 +54,23 @@ func parseStreamPath(input any, path *string) *string {
 		t := reflect.TypeOf(lstInput)
 
 		switch t.Kind() {
+		case reflect.Slice:
+			valuelist := reflect.ValueOf(lstInput)
+			in, err := strconv.ParseUint(v, 10, 64)
+			if err != nil {
+				message += fmt.Sprintf("%v", lstInput)
+				return &message
+			}
+			if uint(in) <= uint(valuelist.Len())-1 {
+				if len(pathParsed)-1 == index {
+					message += fmt.Sprintf("%v", valuelist.Index(int(in)).Interface())
+					return &message
+				}
+			} else {
+				fmt.Println("err")
+				message += fmt.Sprintf("%v", lstInput)
+				return &message
+			}
 		case reflect.Map:
 			// fmt.Println(t.Key())
 			// switch t.Key().Kind() {
@@ -108,7 +126,6 @@ func parseStreamPath(input any, path *string) *string {
 	}
 	return &message
 }
-
 func sampleHandler(
 	messageChannel *chan any,
 	eventNameChannel *chan string,
