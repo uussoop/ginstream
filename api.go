@@ -13,7 +13,7 @@ import (
 
 type GeneralPurposeHandlerType struct {
 	// this handler function is to handle streams any stream must be pushed into event and message channels and when you are done you should either close the channels or push the done channels
-	StreamHandlerFunc func(MessageChannel *chan any, EventNameChannel *chan string, DoneChannel *chan bool)
+	StreamHandlerFunc func(MessageChannel *chan any, EventNameChannel *chan string, DoneChannel *chan bool, Input *string)
 	// this handler function is to handle NONstreams the response should be returned in this scenario
 	NonStreamHandlerFunc func(*string) any
 	//this is the timeout duration which only works on streams
@@ -130,6 +130,7 @@ func SampleHandler(
 	messageChannel *chan any,
 	eventNameChannel *chan string,
 	donechannel *chan bool,
+	Input *string,
 ) {
 	for i := 0; i < 5; i++ {
 		// message := fmt.Sprintf("Message %d", i+1)
@@ -151,7 +152,7 @@ func SampleHandler(
 	close(*donechannel)
 }
 func SampleNonstreamHandler(
-	*string,
+	Input *string,
 ) any {
 	return struct {
 		Message string
@@ -235,7 +236,7 @@ func GeneralPurposeHandler(
 }
 
 func streamHandler(
-	HandlerFunc func(MessageChannel *chan any, EventNameChannel *chan string, DoneChannel *chan bool),
+	HandlerFunc func(MessageChannel *chan any, EventNameChannel *chan string, DoneChannel *chan bool, Input *string),
 	timeout time.Duration,
 	c *gin.Context,
 	input *string,
@@ -251,7 +252,7 @@ func streamHandler(
 	eventNameChannel := make(chan string)
 	donechannel := make(chan bool)
 
-	go HandlerFunc(&messageChannel, &eventNameChannel, &donechannel)
+	go HandlerFunc(&messageChannel, &eventNameChannel, &donechannel, input)
 	if streamPath == nil {
 		*streamPath = "."
 	}
