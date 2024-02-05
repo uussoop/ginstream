@@ -126,7 +126,7 @@ func parseStreamPath(input any, path *string) *string {
 	}
 	return &message
 }
-func sampleHandler(
+func SampleHandler(
 	messageChannel *chan any,
 	eventNameChannel *chan string,
 	donechannel *chan bool,
@@ -150,15 +150,15 @@ func sampleHandler(
 	// Close the channel when the messages are sent
 	close(*donechannel)
 }
-func sampleNonstreamHandler(
+func SampleNonstreamHandler(
 	*string,
 ) any {
 	return struct {
-		message string
-		status  int
+		Message string
+		Status  int
 	}{
-		message: "hi",
-		status:  123,
+		Message: "hi",
+		Status:  123,
 	}
 }
 
@@ -169,10 +169,9 @@ func GeneralPurposeHandler(
 	g GeneralPurposeHandlerType,
 ) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		isStream := false
 		var s streamType
-		c.BindJSON(s)
+		c.ShouldBindJSON(s)
 		if c.GetHeader("Content-Type") == "text/event-stream" || s.stream {
 			isStream = true
 		}
@@ -325,6 +324,7 @@ func nonStreamHandler(
 	outputName *string,
 ) {
 	resp := HandlerFunc(input)
-	c.JSON(http.StatusOK, resp)
 	c.Set(*outputName, resp)
+	c.JSON(http.StatusOK, resp)
+	return
 }

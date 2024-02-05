@@ -1,9 +1,10 @@
-package ginstream
+package main
 
 import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uussoop/ginstream"
 )
 
 func main() {
@@ -14,16 +15,16 @@ func main() {
 	// this can be .data.message
 	path := "message"
 
-	HandlerConf := GeneralPurposeHandlerType{
-		StreamHandlerFunc:    sampleHandler,
-		NonStreamHandlerFunc: sampleNonstreamHandler,
+	HandlerConf := ginstream.GeneralPurposeHandlerType{
+		StreamHandlerFunc:    ginstream.SampleHandler,
+		NonStreamHandlerFunc: ginstream.SampleNonstreamHandler,
 
 		Timeout:           100 * time.Millisecond,
 		InputName:         &request,
 		OutputName:        &response,
 		StreamMessagePath: &path,
 	}
-	r.GET("/chat", GeneralPurposeHandler(HandlerConf))
+	r.GET("/chat", ginstream.GeneralPurposeHandler(HandlerConf))
 
 	r.Run(":8080")
 }
