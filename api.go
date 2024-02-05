@@ -145,7 +145,7 @@ func SampleHandler(
 		*eventNameChannel <- "message"
 
 		// Introduce a delay to simulate some processing
-		time.Sleep(1 * time.Nanosecond)
+		time.Sleep(1 * time.Second)
 	}
 	// Close the channel when the messages are sent
 	close(*donechannel)
@@ -190,6 +190,7 @@ func GeneralPurposeHandler(
 		if !ok {
 			c.JSON(http.StatusBadRequest, "bad request")
 			return
+			// req = &DefaultRequestInput
 		}
 		if g.NonStreamHandlerFunc == nil {
 			c.JSON(http.StatusBadRequest, "non stream config not set")
@@ -278,6 +279,8 @@ func streamHandler(
 				if !ok {
 					close(messageChannel)
 					close(eventNameChannel)
+					c.Set(*outputName, fullmessage)
+
 					return
 				}
 				if done {
@@ -300,12 +303,14 @@ func streamHandler(
 			if !ok {
 				close(messageChannel)
 				close(eventNameChannel)
+				c.Set(*outputName, fullmessage)
 				return
 			}
 			if done {
 				close(messageChannel)
 				close(eventNameChannel)
 				close(donechannel)
+				c.Set(*outputName, fullmessage)
 				return
 			}
 		case <-time.After(timeout):

@@ -19,12 +19,12 @@ func main() {
 		StreamHandlerFunc:    ginstream.SampleHandler,
 		NonStreamHandlerFunc: ginstream.SampleNonstreamHandler,
 
-		Timeout:           100 * time.Millisecond,
+		Timeout:           100 * time.Second,
 		InputName:         &request,
 		OutputName:        &response,
 		StreamMessagePath: &path,
 	}
-	r.GET("/chat", ginstream.GeneralPurposeHandler(HandlerConf))
+	r.POST("/chat", ginstream.GeneralPurposeHandler(HandlerConf))
 
 	r.Run(":8080")
 }
