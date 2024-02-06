@@ -219,6 +219,7 @@ func GeneralPurposeHandler(
 				c,
 				req,
 				g.OutputName,
+				g.StreamMessagePath,
 			)
 		default:
 			nonStreamHandler(
@@ -228,6 +229,7 @@ func GeneralPurposeHandler(
 				c,
 				req,
 				g.OutputName,
+				g.StreamMessagePath,
 			)
 
 		}
@@ -328,9 +330,13 @@ func nonStreamHandler(
 	c *gin.Context,
 	input *string,
 	outputName *string,
+	streamPath *string,
 ) {
+	if streamPath == nil {
+		*streamPath = "."
+	}
 	resp := HandlerFunc(input)
-	c.Set(*outputName, resp)
+	c.Set(*outputName, parseStreamPath(resp, streamPath))
 	c.JSON(http.StatusOK, resp)
 	return
 }
